@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Local manuscript/review artifacts. Keep these out of the public skill repo.
+external_review_packet*.md
+review_response*.md
+sessions/
+output/
+*.docx
+*.pdf
+*.ris
+*.bib
+*.csv

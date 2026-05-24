@@ -1,0 +1,14 @@
+interface:
+  display_name: "Literature Survey Writer"
+  short_description: "Zotero-backed survey drafting and QA"
+  brand_color: "#2563EB"
+  default_prompt: "Use $literature-survey-writer to audit my Zotero-backed corpus, draft a synthesis-heavy survey manuscript, and prepare a submission-ready QA package."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "zotero"
+      description: "Use Zotero MCP for local corpus search, metadata/full-text inspection, annotations, tags, duplicate checks, and optional DOI/URL imports when write mode is enabled."
+
+policy:
+  allow_implicit_invocation: true
