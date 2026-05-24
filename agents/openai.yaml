@@ -1,8 +1,8 @@
 interface:
   display_name: "Literature Survey Writer"
-  short_description: "Zotero-backed survey drafting and QA"
+  short_description: "Zotero-to-manuscript survey loop"
   brand_color: "#2563EB"
-  default_prompt: "Use $literature-survey-writer to audit my Zotero-backed corpus, draft a synthesis-heavy survey manuscript, and prepare a submission-ready QA package."
+  default_prompt: "Use $literature-survey-writer with my literature-search workflow and Zotero MCP to screen, read, write, review, adapt to a target journal, and QA a survey manuscript."
 
 dependencies:
   tools:

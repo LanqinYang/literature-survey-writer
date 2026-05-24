@@ -1,235 +1,281 @@
 ---
 name: literature-survey-writer
 description: |
-  Use this skill to run an evidence-grounded, English-first academic literature survey workflow from topic intake or an existing Zotero corpus through screening, synthesis-heavy manuscript drafting, external GPT review, revision, and submission-package QA. It is especially useful when the user mentions literature review, survey paper, Zotero MCP, BibTeX/RIS export, manuscript drafting, reviewer-style critique, Web GPT Pro review, or journal submission preparation. Chinese/CNKI workflows are opt-in only.
+  Use this skill as a production overlay on top of an existing literature-review/search skill and Zotero MCP. It coordinates the real survey-paper workflow: start from user keywords, reuse the baseline literature-reviewer skill for English-first search and candidate exports, import candidates into Zotero, retrieve full text, screen, enforce a mandatory reading gate, hand off to manuscript-writing, iterate with Web GPT/ChatGPT Pro review when approved, choose a target journal, revise to journal requirements, run reviewer-mode critique, and finish submission QA. Trigger for survey paper production, Zotero MCP literature workflows, Web GPT review loops, target-journal adaptation, reviewer mode, or manuscript hardening.
 ---
 
 # Literature Survey Writer
 
-This skill upgrades a basic literature-review workflow into a full survey-paper production loop:
+This is not a replacement for a literature-search skill. It is the layer that makes the whole paper-production loop behave.
 
-1. Build or audit a corpus.
-2. Separate evidence levels.
-3. Draft a synthesis-first manuscript.
-4. Run an external review loop when authorized.
-5. Convert review feedback into actionable prompts.
-6. Revise, package, and QA the submission artifacts.
+Use the baseline literature-reviewer skill for what it already does well:
 
-Default language for papers, searches, citations, and outputs is English unless the user asks otherwise.
+- turn keywords into English-first search queries
+- search scholarly platforms
+- deduplicate candidates
+- export `references.md`, `references.bib`, and `references.ris`
+- create first-pass paper lists and metadata
 
-## Operating Rules
-
-- Prefer English scholarly sources and metadata platforms. Use Chinese/CNKI sources only when explicitly requested.
-- Treat Zotero as a reference manager, corpus workspace, and audit layer, not as a search engine.
-- Do not send manuscripts, Zotero libraries, PDFs, annotations, or unpublished drafts to third-party services without explicit user approval.
-- Distinguish full-text-backed claims, abstract/metadata-level observations, and parked/excluded records.
-- Do not call a narrative survey a systematic review unless the search, screening, and reporting protocol actually supports that label.
-- Preserve numbered citations if the target journal/package uses numeric references.
-- Keep final claims bounded by the corpus. Avoid invented novelty, fake publications, or unsupported "first/novel" wording.
-- Continue from existing session files when present; do not restart a corpus workflow just because the user asks a new revision question.
-
-## Mode Selection
-
-Choose the mode before acting:
-
-- **Search-first**: The user has a topic but no corpus. Generate queries, search public scholarly sources, deduplicate, and export references.
-- **Zotero-first**: The user has a Zotero collection, BibTeX/RIS, or local corpus. Audit it first, then fill only meaningful gaps.
-- **Continuation**: A `sessions/<date>_<topic>/` folder or previous outputs already exist. Read the current state files and continue from the latest draft/package.
-- **Manuscript-hardening**: A draft already exists. Focus on claim audit, external review, revision prompts, citations, formatting, and submission QA.
-
-## Recommended Session Layout
-
-Use a stable session folder such as:
+Use this skill for the parts that usually break after that:
 
 ```text
-sessions/YYYYMMDD_topic_short/
-  session_log.md
-  metadata.json
-  papers_raw.json
-  papers_deduplicated.json
-  output/
-    references.md
-    references.bib
-    references.ris
-    corpus_audit.md
-    reading_matrix.md
-    review_outline.md
-    literature_review_draft_v01.md
-    submission_package_vNN_label_YYYYMMDD/
+keywords
+  -> baseline literature-reviewer search/export
+  -> Zotero MCP import and attachment audit
+  -> screening
+  -> mandatory reading gate
+  -> evidence matrix
+  -> manuscript-writing skill
+  -> Web GPT review loop
+  -> target-journal adaptation
+  -> reviewer-mode critique
+  -> submission QA
 ```
 
-For continuation work, create a `README_current_state_YYYYMMDD.md` or equivalent entry point that identifies the authoritative files and marks older files as historical.
+## Hard Rules
 
-## Corpus Workflow
+- Do not write evidence-heavy manuscript sections from metadata alone.
+- Papers that support central claims must be marked `full_text_read`.
+- Zotero import is not reading. A paper in Zotero is only a managed record until its full text is read or explicitly downgraded.
+- Abstract-only and metadata-only records may support gap checking, not central arguments.
+- If Zotero MCP cannot write, use RIS/BibTeX fallback imports and record the fallback.
+- If Zotero MCP cannot read full text, log whether the paper needs attachment repair, external retrieval, replacement, or parking.
+- Do not upload drafts, Zotero notes, PDFs, author metadata, or reviewer materials to Web GPT/ChatGPT/other services without explicit user approval.
+- Once a target journal is chosen, journal requirements override generic formatting preferences.
+- Reviewer-mode feedback is a stress test, not generic polishing.
 
-### 1. Audit Existing Sources
+## Minimal State Files
 
-When Zotero or local exports exist, audit before searching:
+Create or maintain these files in the working session:
 
-- Count top-level records, attachments, notes, duplicates, missing DOI/URL, and missing PDFs.
-- Classify each record as core, supporting, context, parked, duplicate, or excluded.
-- Record whether evidence is full text, abstract/metadata only, or externally recovered.
-- If Zotero MCP cannot write because it is local-only, export RIS/BibTeX/CSV fallback files and tell the user to import them manually.
+```text
+keywords_and_queries.md          # produced by baseline literature-reviewer skill
+candidate_export_status.md       # where references.md/BibTeX/RIS came from
+zotero_import_log.md             # MCP import or fallback import record
+screening_matrix.csv             # include/support/park/exclude decisions
+reading_queue.md                 # selected papers that must be read
+reading_notes.md                 # actual paper notes after reading
+evidence_matrix.md               # read evidence mapped to claims/sections
+claim_audit.md                   # central claims, supporting papers, and wording boundaries
+writing_handoff.md               # instructions for manuscript-writing phase
+web_gpt_review_log.md            # external review packets, feedback, prompts
+journal_requirements.md          # target-journal constraints
+reviewer_mode_report.md          # reviewer-style critique after journal adaptation
+pre_submission_checklist.md      # final QA and human-confirmation items
+```
 
-Useful Zotero MCP actions when available:
+Use `scripts/init_survey_loop.py` to scaffold these files when starting a new project.
 
-- Search: semantic search, item search, tag search, collection listing.
-- Read: metadata, child items, annotations, full text when an attachment exists.
-- Organize: add by DOI/URL, batch tags, duplicate detection, collection management.
+## Workflow
 
-Never treat missing Zotero full text as proof that a paper is unusable. Log it as one of:
+### 1. Keywords To Candidate Papers
 
-- metadata present
-- no suitable attachment/full text in Zotero
-- externally readable fallback exists
-- needs PDF attachment repair before extraction
+Start from the user's keywords/topic. Invoke or follow the baseline literature-reviewer skill for search, deduplication, and export. Do not duplicate that skill's full search protocol here.
 
-### 2. Fill Gaps Deliberately
+Expected outputs:
 
-Use public metadata and literature platforms to fill clear gaps:
+- raw or deduplicated candidate list
+- `references.md`
+- `references.bib`
+- `references.ris`
+- search notes or query log
 
-- Google Scholar for discovery and related work.
-- Semantic Scholar, OpenAlex, and Crossref for DOI and metadata.
-- Publisher pages for authoritative metadata and abstracts.
-- IEEE Xplore, ACM Digital Library, arXiv, PubMed, ScienceDirect, SpringerLink, Wiley, Taylor & Francis, SAGE, and JSTOR as domain-appropriate.
+Record what exists in `candidate_export_status.md`.
 
-Search expansion should target gaps such as recency, missing baselines, undercovered methods, or target-journal positioning. Avoid expanding the corpus simply to increase paper count.
+### 2. Import Candidates Into Zotero
 
-### 3. Build Evidence Matrices
+Use Zotero MCP when available:
 
-For survey papers, build synthesis assets before expanding prose:
+- search Zotero first to avoid duplicates
+- add candidates by DOI or URL
+- inspect item children and attachment state
+- tag records by workflow state
+- record failures and fallbacks
+
+Suggested tags:
+
+```text
+candidate
+screened-in
+screened-out
+core
+supporting
+full-text-needed
+full-text-read
+parked
+duplicate
+```
+
+If MCP write mode is unavailable, keep Zotero-importable `references.bib` / `references.ris` and tell the user to import them manually. Log this in `zotero_import_log.md`.
+
+### 3. Retrieve Full Text And Audit Readability
+
+For each candidate, record one state:
+
+```text
+zotero_pdf_readable
+zotero_metadata_only
+external_fulltext_available
+abstract_only
+needs_pdf_attachment
+unavailable
+duplicate_or_version
+```
+
+Do not treat `zotero_metadata_only` as read evidence. It is a retrieval status, not an evidence status.
+
+### 4. Screen Before Reading
+
+Screen papers into:
+
+```text
+include_core
+include_supporting
+context_only
+abstract_gap_check
+park
+exclude
+duplicate
+```
+
+Screening criteria should include topic fit, method/system relevance, publication quality, recency/foundational value, duplicate/version relationship, and full-text availability.
+
+Give a direct sufficiency judgment after screening:
+
+- enough to write after reading gate
+- enough for narrative survey, not systematic review
+- needs targeted supplement
+- not enough yet
+
+### 5. Mandatory Reading Gate
+
+Before manuscript writing, create `reading_queue.md` from `include_core` and important `include_supporting` papers.
+
+Every paper used for a central claim needs:
+
+```text
+citation
+Zotero key / DOI / URL
+read status
+evidence type
+main contribution
+method/system
+task/data/deployment setting
+limitations
+claim(s) it can support
+planned manuscript section
+```
+
+Allowed read statuses:
+
+```text
+unread
+skimmed
+full_text_read
+cannot_read
+parked
+```
+
+Only `full_text_read` can support central claims. `skimmed` can support background framing. `cannot_read` and metadata-only items should be parked, replaced, or used only for gap awareness.
+
+If the user asks to write too early, draft only safe scaffolding: outline, method wording, table shells, or reading plan. Do not synthesize unread papers as if they were read.
+
+### 6. Evidence Matrix And Writing Handoff
+
+After reading, build `evidence_matrix.md`:
 
 ```markdown
-| ID | Citation | Role | Theme | Method/System | Deployment level | AI task/model | Evidence type | Key contribution | Limitation/Gaps | Status |
-|---|---|---|---|---|---|---|---|---|---|---|
+| ID | Citation | Evidence level | Theme | Method/System | Key finding | Limitation | Claim supported | Section |
+|---|---|---|---|---|---|---|---|---|
 ```
 
-Also maintain:
+Then write `writing_handoff.md` for the manuscript-writing skill:
 
-- `corpus_audit.md`
-- `reading_matrix.md`
-- `claim_audit.md`
-- `citation_consistency_audit.md`
-- `table_rebuild_plan.md` when the article depends on analytical tables
+- review question and scope
+- corpus counts and evidence hierarchy
+- target structure
+- central claims and supporting evidence
+- tables/figures to build
+- claims to avoid or soften
+- citation style preference if known
 
-## Manuscript Drafting Workflow
+### 7. Manuscript Writing
 
-Draft around synthesis, not paper-by-paper summaries.
+Use a writing skill or manuscript-writing workflow after the reading gate passes.
 
-1. Create a review question and scope boundary.
-2. Write a transparent corpus/method paragraph appropriate to the evidence level.
-3. Build a taxonomy or comparison framework.
-4. Create analytical tables before long prose when the field is broad.
-5. Draft sections around patterns, tensions, and deployment constraints.
-6. Add a positioning table against close surveys when novelty or journal fit is a risk.
-7. Add open challenges that arise from the evidence tables, not generic future work.
+Writing rules:
 
-Use precise wording:
+- synthesize across papers; do not summarize one paper per paragraph
+- build analytical tables before long prose when the field is broad
+- cite read evidence for central claims
+- position against close surveys
+- state corpus limitations honestly
+- keep emerging areas marked as emerging when evidence is thin
 
-- Prefer "structured narrative survey" or "criteria-based corpus" unless systematic-review reporting is available.
-- Say "Zotero was used to manage, deduplicate, tag, and audit the corpus"; do not say Zotero produced the literature.
-- Mark emerging areas as emerging when evidence is mostly recent, prototype-level, or abstract-level.
+### 8. Web GPT Review Loop
 
-## External GPT Review Loop
+Use `scripts/build_external_review_packet.py` to create a local review packet.
 
-This replaces the manual pattern: user pastes the manuscript into Web GPT Pro, receives critique/prompt, then pastes that prompt back into Codex.
+Before uploading anything externally:
 
-### Consent Gate
-
-Before using ChatGPT/Web GPT Pro, another web model, or any third-party service:
-
-1. State what will be uploaded.
-2. State whether it includes unpublished manuscript text, references, author metadata, or review notes.
+1. Say what will be sent.
+2. Say whether it includes unpublished manuscript text, references, author metadata, Zotero notes, or reviewer materials.
 3. Ask for explicit approval.
-4. If approval is not given, generate a local review prompt packet instead.
 
-### Review Packet
+After Web GPT / ChatGPT Pro returns feedback:
 
-Prepare a compact packet rather than dumping the whole workspace:
+- save it in `web_gpt_review_log.md`
+- extract the revision prompt
+- convert the critique into critical/high/medium/optional tasks
+- revise only where the evidence supports the change
+- repeat until the draft stabilizes
 
-- Current draft or selected sections.
-- Target journal and constraints.
-- Corpus counts and evidence-level summary.
-- Known high-risk claims.
-- Citation/reference audit results.
-- Specific review questions.
+### 9. Target Journal Selection And Adaptation
 
-Use `scripts/build_external_review_packet.py` to assemble a Markdown packet:
+When the manuscript is stable, choose or confirm the journal.
 
-```bash
-python3 skills/literature-survey-writer/scripts/build_external_review_packet.py \
-  --draft path/to/current_draft.md \
-  --out path/to/external_review_packet.md \
-  --target-journal "Target Journal Name" \
-  --notes path/to/corpus_audit.md path/to/citation_consistency_audit.md
-```
+Record in `journal_requirements.md`:
 
-### Browser Automation
+- aims and scope fit
+- article type
+- word/page limits
+- citation style
+- figure/table limits
+- formatting/template rules
+- required declarations
+- data availability policy
+- generative-AI disclosure policy
+- highlights, graphical abstract, biographies, CRediT, conflicts/funding
 
-If the user approves and an authenticated browser is available:
+Then revise the paper to the journal, not to a generic "good paper" standard.
 
-1. Open the user's logged-in ChatGPT/Web GPT Pro page with the browser or Chrome tool.
-2. Paste the review packet or upload the allowed file.
-3. Ask for a structured critique plus an actionable revision prompt.
-4. Save the returned critique/prompt into the session output.
-5. Apply only the feedback that is consistent with the evidence and target journal.
+### 10. Reviewer Mode
 
-If automation is unavailable, provide the generated packet and wait for the user to paste back the external model's critique.
+After journal adaptation, run reviewer mode:
 
-### External Review Prompt
+- missing literature
+- weak novelty
+- unsupported claims
+- method/corpus transparency
+- structure problems
+- table/figure usefulness
+- citation consistency
+- target-journal fit
+- likely rejection reasons
 
-Ask the external reviewer for:
+Save to `reviewer_mode_report.md`, revise again, then run final QA.
 
-- Blocking issues.
-- Unsupported claims.
-- Missing close surveys or baselines.
-- Method/corpus transparency risks.
-- Citation and numbering risks.
-- Journal-fit and page-limit risks.
-- A concise revision prompt that Codex can execute.
+### 11. Final QA
 
-## Revision and QA Workflow
+Before saying the package is ready:
 
-After each external or internal review:
+- all central claims map to read evidence
+- citation/reference mapping is closed
+- tables and figures are numbered and referenced
+- target-journal requirements are checked
+- PDF/DOCX render is visually inspected when applicable
+- declarations are present
+- author metadata is marked for human confirmation
+- no external-review packet or Zotero export is accidentally included in public repo
 
-1. Convert feedback into a checklist with critical, high, medium, and optional items.
-2. Apply revisions to the manuscript source.
-3. Re-run citation/reference consistency checks.
-4. Rebuild DOCX/PDF if requested or needed.
-5. Render pages or otherwise visually inspect the final artifact.
-6. Write a change log and remaining human-confirmation checklist.
-
-Submission-package artifacts commonly include:
-
-- current manuscript Markdown
-- DOCX and/or PDF
-- figures and source figures
-- highlights file when the journal requires it
-- `README_submission_package.md`
-- `docx_qa_report_YYYYMMDD.md`
-- `author_submission_checklist_YYYYMMDD.md`
-- `pre_submission_skill_checklist_YYYYMMDD.md`
-- reference exports if useful: `references.bib`, `references.ris`
-
-## Quality Gates
-
-Before declaring a manuscript ready, check:
-
-- All in-text citations map to reference-list entries.
-- Reference numbering is continuous if numeric style is used.
-- Tables and figures are numbered continuously.
-- Figure files exist and render correctly.
-- Page count fits the target journal when there is a page limit.
-- Title-page metadata is explicitly marked for human confirmation.
-- Data availability, generative-AI disclosure, conflicts/funding, and CRediT statements match journal requirements.
-- Any optional systematic-review appendix is described as optional unless required.
-
-## Output Style
-
-Give direct sufficiency judgments:
-
-- "Enough to draft now" when corpus coverage is broad and gaps are manageable.
-- "Enough for a narrative survey, not enough for a systematic review" when protocol reporting is incomplete.
-- "Need targeted supplement" only when a specific gap affects the argument.
-
-Keep user-facing updates concise and evidence-led. The purpose of the skill is to help finish an article, not to keep searching indefinitely.
+The final answer should state what is ready, what still needs human confirmation, and what remains optional.
