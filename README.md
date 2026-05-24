@@ -1,5 +1,7 @@
 # Literature Survey Writer
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 The missing middle of a serious survey-paper workflow.
 
 This is **not** trying to replace a literature-search skill. A lot of that work is already handled well by existing literature reviewer skills: take keywords, search Google Scholar / Semantic Scholar / OpenAlex / publisher sites, deduplicate, and export BibTeX/RIS.
@@ -74,15 +76,20 @@ Central claims should come from papers marked as `full_text_read`.
 
 ## Install
 
-Clone this repo into your Codex skills folder:
+Recommended: ask Codex to install it for you.
+
+```text
+帮我安装这个 skill: https://github.com/LanqinYang/literature-survey-writer
+```
+
+If you want to install manually, clone it into your Codex skills folder:
 
 ```bash
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-git clone https://github.com/LanqinYang/literature-survey-writer.git \
-  "${CODEX_HOME:-$HOME/.codex}/skills/literature-survey-writer"
+git clone https://github.com/LanqinYang/literature-survey-writer.git "${CODEX_HOME:-$HOME/.codex}/skills/literature-survey-writer"
 ```
 
-Restart Codex so it can discover the skill.
+Restart Codex after installation.
 
 Example prompt:
 
@@ -100,7 +107,8 @@ literature-survey-writer/
 │   ├── build_external_review_packet.py
 │   └── init_survey_loop.py
 ├── .gitignore
-└── README.md
+├── README.md
+└── README.zh-CN.md
 ```
 
 `SKILL.md` is the agent-facing workflow. This README is for humans deciding whether the skill fits their project.
@@ -110,7 +118,7 @@ literature-survey-writer/
 Create a production session:
 
 ```bash
-python3 scripts/init_survey_loop.py --topic "edge AI survey"
+python3 scripts/init_survey_loop.py --topic "your survey topic"
 ```
 
 It creates files like:
@@ -146,6 +154,16 @@ Zotero MCP is used for:
 
 If MCP write mode is unavailable, the skill falls back to RIS/BibTeX imports and records that fallback in `zotero_import_log.md`.
 
+Manual RIS/BibTeX import fallback:
+
+```text
+Zotero -> File -> Import... -> A file -> choose references.ris or references.bib
+```
+
+Then move imported items into the project collection, check duplicates by DOI/title, and tag them as candidates.
+
+For full text, the workflow checks whether Zotero already has a readable PDF attachment. If not, it tries Zotero's PDF/full-text retrieval path or uses the publisher/DOI/arXiv page with Zotero Connector. Missing PDFs are logged instead of quietly ignored.
+
 ## Reading Gate
 
 Before writing evidence-heavy sections, every core paper should have:
@@ -173,6 +191,8 @@ parked
 ```
 
 Only `full_text_read` should support central claims.
+
+The intended rule is stronger than "sample a few papers": all core screened-in papers must be read, and every central claim should map back to reading notes.
 
 ## Web GPT / ChatGPT Pro Review
 

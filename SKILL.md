@@ -108,6 +108,18 @@ duplicate
 
 If MCP write mode is unavailable, keep Zotero-importable `references.bib` / `references.ris` and tell the user to import them manually. Log this in `zotero_import_log.md`.
 
+Manual RIS/BibTeX import fallback:
+
+1. Open Zotero.
+2. Use `File -> Import...`.
+3. Choose `A file`.
+4. Select the generated `.ris` or `.bib` file.
+5. Import into a new collection or move imported items into the project collection.
+6. Run duplicate detection or search by DOI/title before treating the import as clean.
+7. Tag imported items as `candidate` or another project-specific workflow tag.
+
+Zotero also supports importing raw RIS/BibTeX from the clipboard through `File -> Import from Clipboard`; use this only for small batches.
+
 ### 3. Retrieve Full Text And Audit Readability
 
 For each candidate, record one state:
@@ -123,6 +135,16 @@ duplicate_or_version
 ```
 
 Do not treat `zotero_metadata_only` as read evidence. It is a retrieval status, not an evidence status.
+
+Full-text retrieval sequence:
+
+1. Check Zotero child items with MCP or UI. If a PDF attachment exists, try reading it through Zotero MCP.
+2. If Zotero has metadata only, use Zotero's available PDF/full-text retrieval action or the Zotero Connector from the publisher/DOI/arXiv page.
+3. If Zotero cannot retrieve the PDF, search for legal open versions: publisher open access page, arXiv, institutional repository, author page, or DOI landing page.
+4. If a PDF is found outside Zotero, attach it to the correct parent item or mark it as externally readable.
+5. If no full text can be retrieved, decide explicitly: replace, park, keep for abstract-level gap checking, or request manual user help.
+
+Record the result in `zotero_import_log.md` or a full-text audit section. Do not allow silent missing-PDF failures.
 
 ### 4. Screen Before Reading
 
@@ -178,6 +200,13 @@ parked
 
 Only `full_text_read` can support central claims. `skimmed` can support background framing. `cannot_read` and metadata-only items should be parked, replaced, or used only for gap awareness.
 
+Reading completion rule:
+
+- All `include_core` papers must be `full_text_read` before evidence-heavy writing begins.
+- Important `include_supporting` papers should also be read; if not, downgrade their role and state why.
+- If a selected paper cannot be read, change its status to `cannot_read` and choose one action: retrieve manually, replace, park, or use only for gap awareness.
+- The agent must not say "all papers were read" unless every paper claimed as read has a reading note.
+
 If the user asks to write too early, draft only safe scaffolding: outline, method wording, table shells, or reading plan. Do not synthesize unread papers as if they were read.
 
 ### 6. Evidence Matrix And Writing Handoff
@@ -211,6 +240,16 @@ Writing rules:
 - position against close surveys
 - state corpus limitations honestly
 - keep emerging areas marked as emerging when evidence is thin
+
+Writing handoff must include enough material for a separate writing skill or model to write without redoing search:
+
+- read-paper count
+- support/background/gap-check counts
+- evidence matrix
+- claim audit
+- section plan
+- citation style preference if already known
+- claims that must be softened or avoided
 
 ### 8. Web GPT Review Loop
 
