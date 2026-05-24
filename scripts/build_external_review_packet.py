@@ -15,7 +15,7 @@ DEFAULT_QUESTIONS = [
     "Identify blocking issues that would weaken journal submission.",
     "Find unsupported, overstated, or unclear claims.",
     "Check whether the corpus/method description matches a narrative survey rather than a systematic review.",
-    "Flag missing close surveys, baselines, or target-journal positioning risks.",
+    "Flag missing close surveys, comparator studies, or target-journal positioning risks.",
     "Check citation/reference, table/figure numbering, and page-limit risks when evidence is provided.",
     "Return a concise, actionable revision prompt that another coding/writing agent can execute.",
 ]

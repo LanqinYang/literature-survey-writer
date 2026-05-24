@@ -1,80 +1,69 @@
-# Literature Survey Writer
+# 文献综述 + Zotero MCP 联动工作流
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-严肃综述论文工作流里，最容易缺掉的中间层。
+一个把关键词、文献检索、Zotero MCP、全文阅读、综述写作和投稿 QA 串起来的 Codex skill。
 
-这个 skill **不是**用来替代原本的 literature reviewer/search skill。关键词扩展、英文文献检索、Google Scholar / Semantic Scholar / OpenAlex / 出版商页面检索、去重、导出 BibTeX/RIS 这些事情，原始 literature reviewer skill 已经能做。
-
-这个 skill 解决的是后半段真正麻烦的部分：
+它覆盖完整链路：
 
 ```text
 关键词
-  -> 原始 literature-reviewer skill 找候选论文
-  -> Zotero MCP 导入和检查附件
-  -> 筛选论文
-  -> 筛选后的核心论文必须读
-  -> 已读证据进入 evidence matrix
-  -> 写作 skill 开始写稿
-  -> Web GPT / ChatGPT Pro 反复审稿
-  -> 确定目标期刊
+  -> 文献检索
+  -> BibTeX / RIS / DOI 捕获
+  -> Zotero MCP 导入
+  -> 获取全文
+  -> 筛选
+  -> 必须阅读
+  -> evidence matrix
+  -> 写文章
+  -> Web GPT / ChatGPT Pro 审稿
+  -> 定目标期刊
   -> 按期刊要求修改
-  -> reviewer mode 再攻击一遍
+  -> reviewer mode 再审一遍
   -> 最终投稿 QA
 ```
 
-一句话：它不是“帮你找 50 篇 paper”，而是防止“找完 50 篇 paper 以后开始乱写”。
+核心原则很简单：
+
+> 找到文献不等于读过文献。  
+> 导入 Zotero 不等于理解文献。  
+> 文章里的中心论点应该能追溯到已读证据。
 
 ## 为什么需要这个
 
 很多 AI 文献综述流程第一步都还可以：
 
-> 这是与你主题相关的 50 篇文献。
+> 这是与你关键词相关的文献。
 
-真正的问题在后面：
+真正麻烦的是后面：
 
-- 哪些文章应该进 Zotero？
-- 哪些文章有全文？
-- 哪些文章只是导入了，哪些是真的读过？
-- 哪些 claim 有已读证据支撑？
+- 哪些文献应该进 Zotero？
+- 哪些文献有全文？
+- 哪些文献筛掉、暂存、只做背景？
+- 哪些文献真的读过？
+- 每篇文献能支撑哪个 claim？
 - 什么时候 corpus 足够开始写？
-- 怎么避免写成“一篇 paper 一段话”的堆砌？
-- 怎么把 Web GPT / ChatGPT Pro 作为审稿人反复用，而不是一直手动复制粘贴？
-- 定了期刊以后，怎么按期刊 guide 改，而不是泛泛地“润色一下”？
-- 真投稿前，怎么先用 reviewer mode 把自己打一遍？
+- 怎么避免写成“一篇 paper 一段话”？
+- 怎么让 Web GPT / ChatGPT Pro 反复当审稿人，同时不丢修改记录？
+- 定了期刊以后，怎么按期刊 guide 改？
+- 真正投稿前，怎么先用 reviewer mode 打自己一遍？
 
-这个 skill 就是这条链路的 coordinator。
+这个 skill 的作用就是把这些环节显式串起来。
 
-## 它在原始 literature reviewer skill 之上补什么
+## 这个 Skill 做什么
 
-原始 literature reviewer skill 负责：
-
-- 关键词扩展
-- 英文优先检索
-- 元数据抓取
-- 去重
-- 导出 Markdown / BibTeX / RIS
-
-这个 skill 补上：
-
-- Zotero MCP 导入与 fallback 记录
-- RIS/BibTeX 手动导入 Zotero 的步骤
-- Zotero 全文/附件获取与可读性检查
-- 筛选矩阵
-- 强制阅读 gate
-- reading notes
-- evidence matrix 和 claim audit
-- 写作 skill 的 handoff
-- Web GPT / ChatGPT Pro review packet
-- 目标期刊要求记录
-- reviewer mode
-- 投稿前 QA
-
-核心规则：
-
-> Zotero import is not reading.
-
-导入 Zotero 不等于读过。支撑中心论点的文章必须是 `full_text_read`。
+- 把用户关键词扩展成检索词和 query plan。
+- 捕获候选论文的 DOI、URL、BibTeX、RIS 或元数据。
+- 通过 Zotero MCP 把候选文献导入 Zotero。
+- 当 Zotero MCP 不能写入时，提供 RIS/BibTeX 手动导入 fallback。
+- 检查 Zotero 里是否有 PDF / 全文。
+- 跟踪每篇文章的状态：未读、略读、全文已读、无法读取、暂存。
+- 强制阅读 gate：中心论点不能建立在 metadata 上。
+- 建 evidence matrix 和 claim audit。
+- 把已读证据交给写作阶段。
+- 生成 Web GPT / ChatGPT Pro review packet。
+- 记录目标期刊要求。
+- 做 reviewer mode 和投稿前 QA。
 
 ## 安装
 
@@ -96,7 +85,7 @@ git clone https://github.com/LanqinYang/literature-survey-writer.git "${CODEX_HO
 示例用法：
 
 ```text
-Use $literature-survey-writer with my existing literature-reviewer skill and Zotero MCP. Start from these keywords, import candidate papers to Zotero, screen them, force a reading queue, then prepare the writing handoff.
+Use $literature-survey-writer to start from these keywords, find papers, import them into Zotero with Zotero MCP, screen them, read the selected papers, and prepare the manuscript-writing handoff.
 ```
 
 ## 文件结构
@@ -113,15 +102,15 @@ literature-survey-writer/
 └── README.zh-CN.md
 ```
 
-`SKILL.md` 是 agent 真正读取的工作流说明。README 只是给人看的入口。
+`SKILL.md` 是 agent 真正读取的工作流说明。README 是给人看的入口。
 
-## 初始化一个项目状态
+## 初始化项目状态
 
 ```bash
 python3 scripts/init_survey_loop.py --topic "your survey topic"
 ```
 
-它会创建这些状态文件：
+它会创建这些文件：
 
 ```text
 keywords_and_queries.md
@@ -139,13 +128,20 @@ reviewer_mode_report.md
 pre_submission_checklist.md
 ```
 
-这些文件看起来很朴素，但作用很重要：让流程不能假装“已经读过”“已经检查过”“已经适配期刊”。
+这些文件用来记录：找到了什么、什么进了 Zotero、筛掉了什么、读了什么、哪些 claim 有证据、后面还缺什么。
 
-## RIS/BibTeX 怎么导入 Zotero
+## Zotero MCP 和 RIS/BibTeX
 
-如果 Zotero MCP 可以写入，优先让 MCP 按 DOI/URL 导入，并记录在 `zotero_import_log.md`。
+有 Zotero MCP 时，这个 skill 可以：
 
-如果 MCP 不能写入，就走手动 fallback：
+- 先查本地 Zotero，避免重复导入。
+- 按 DOI 或 URL 添加条目。
+- 检查 child items 和附件。
+- 在有可读附件时读取全文。
+- 给文献打 workflow tag。
+- 查重。
+
+如果 Zotero MCP 不能写入，走手动 RIS/BibTeX 导入：
 
 ```text
 Zotero -> File -> Import... -> A file -> 选择 references.ris 或 references.bib
@@ -153,24 +149,24 @@ Zotero -> File -> Import... -> A file -> 选择 references.ris 或 references.bi
 
 导入后：
 
-1. 把导入条目移动到项目 collection。
+1. 把条目移动到项目 collection。
 2. 用 DOI / 标题查重。
-3. 给导入条目打上 `candidate` 等 workflow tag。
-4. 在 `zotero_import_log.md` 里记录导入文件、时间、数量和问题。
+3. 给导入条目打 `candidate` 等 tag。
+4. 在 `zotero_import_log.md` 里记录导入文件、数量和问题。
 
-Zotero 也支持 `File -> Import from Clipboard` 导入剪贴板里的 RIS/BibTeX，但这个更适合小批量。
+Zotero 也可以用 `File -> Import from Clipboard` 从剪贴板导入 RIS/BibTeX，这适合小批量。
 
-## 怎么在 Zotero 获取原文
+## 在 Zotero 获取全文
 
-流程不是“导入完就读”，而是先检查全文状态：
+每篇导入的文章都要检查全文状态：
 
-1. 看 Zotero 条目下面有没有 PDF attachment。
-2. 如果有 PDF，用 Zotero MCP 读取全文；读不到就记录原因。
-3. 如果只有 metadata，尝试 Zotero 的可用 PDF / full-text 获取功能，或从 DOI、出版商页面、arXiv、机构仓储、作者主页等合法来源获取。
-4. 找到 PDF 后，挂到正确的 Zotero parent item 下面。
-5. 找不到全文的，不要假装读过。标记为 `cannot_read`、`abstract_gap_check`、`parked`，或者请求用户手动帮忙。
+1. 看 Zotero item 下有没有 PDF attachment。
+2. 有 PDF 时，尽量通过 Zotero MCP 读取。
+3. 只有 metadata 时，尝试 Zotero 的 PDF/full-text 获取路径，或用 Zotero Connector 从出版商、DOI、arXiv 页面保存。
+4. 如果在合法开放来源找到 PDF，把它挂到正确的 Zotero parent item 下，或标记为 externally readable。
+5. 找不到全文时，明确标记，不要假装读过。
 
-全文状态要记录清楚，例如：
+常用全文状态：
 
 ```text
 zotero_pdf_readable
@@ -182,11 +178,11 @@ unavailable
 duplicate_or_version
 ```
 
-## 必须读完再写
+## 阅读 Gate
 
-筛选后进入核心证据的文章，要进入 `reading_queue.md`。
+开始写 evidence-heavy 的正文前，筛选进入核心证据的文献必须读。
 
-每篇核心文章至少记录：
+每篇核心文献至少记录：
 
 ```text
 citation
@@ -212,16 +208,16 @@ parked
 
 规则：
 
-- `include_core` 的文章必须读。
-- 重要 `include_supporting` 尽量读；不读就降级它的作用。
+- 所有 `include_core` 文献必须读。
+- 重要 `include_supporting` 文献应该读；不读就降级它的作用。
 - 只有 `full_text_read` 可以支撑中心论点。
 - `skimmed` 最多用于背景。
-- metadata-only / abstract-only 只能用于 gap checking。
-- agent 不能在没有 reading note 的情况下说“已经读完”。
+- metadata-only / abstract-only 只能做 gap checking。
+- 没有 reading notes，就不能说“都读完了”。
 
-## Web GPT / ChatGPT Pro 反复 review
+## Web GPT / ChatGPT Pro 审稿
 
-脚本可以生成本地 review packet：
+脚本会生成本地 review packet：
 
 ```bash
 python3 scripts/build_external_review_packet.py \
@@ -233,32 +229,29 @@ python3 scripts/build_external_review_packet.py \
 
 这个脚本**不会上传任何东西**。
 
-如果要让 agent 把 packet 粘贴到 Web GPT / ChatGPT Pro，必须先说明要上传什么，并得到明确同意。
+如果要让 agent 把 packet 粘贴到 Web GPT / ChatGPT Pro，必须先说明会分享什么，并得到明确同意。
 
-Web GPT 返回 critique 和 revision prompt 后，记录在 `web_gpt_review_log.md`，再转成可执行修改任务。
-
-## 定刊和 reviewer mode
+## 定刊和 Reviewer Mode
 
 稿件稳定后：
 
 1. 确认目标期刊。
-2. 记录期刊 guide：范围、文章类型、页数/字数、引用格式、图表、声明、AI disclosure、data availability 等。
+2. 记录期刊要求：范围、文章类型、字数/页数、引用格式、图表、声明、AI disclosure、data availability、所需文件。
 3. 按期刊要求修改。
-4. 进入 reviewer mode。
-5. 从审稿人角度检查：缺文献、novelty 弱、claim 过强、方法不透明、图表无用、引用不闭合、期刊不匹配。
-6. 再改一轮。
-7. 最后做投稿 QA。
+4. 运行 reviewer mode。
+5. 再修改。
+6. 最后做投稿 QA。
 
-这一步的目标不是“写得更漂亮”，而是让文章更像能投出去的稿件。
+这一步的目标不是“写得更好看”，而是让稿件更像能投出去的文章。
 
 ## 隐私
 
-不要把这些东西提交到公开仓库：
+不要把这些活项目文件提交到公开仓库：
 
 - 未发表稿件
-- PDF / DOCX
-- 活项目的 Zotero 导出
-- review packet
+- PDF 或 DOCX
+- 活项目 Zotero 导出
+- external review packet
 - 作者信息
 - 审稿意见
 - 投稿表单
@@ -267,4 +260,4 @@ Web GPT 返回 critique 和 revision prompt 后，记录在 `web_gpt_review_log.
 
 ## License
 
-目前还没加 license。真正开放复用前建议补一个。
+目前还没加 license。开放复用前建议补一个。

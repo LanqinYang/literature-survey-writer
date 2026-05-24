@@ -16,7 +16,7 @@ def slugify(text: str) -> str:
 
 FILES = {
     "session_log.md": "# Session Log\n\n",
-    "keywords_and_queries.md": "# Keywords And Queries\n\nUse the baseline literature-reviewer skill to fill this file.\n",
+    "keywords_and_queries.md": "# Keywords And Queries\n\nRecord user keywords, expanded terms, Boolean queries, source plans, and exclusion terms here.\n",
     "candidate_export_status.md": "# Candidate Export Status\n\n- references.md: pending\n- references.bib: pending\n- references.ris: pending\n",
     "zotero_import_log.md": "# Zotero Import Log\n\nRecord MCP imports, duplicate checks, fallback RIS/BibTeX imports, and failures here.\n",
     "screening_matrix.csv": "id,citation,doi_or_url,theme,full_text_status,screening_decision,reason,notes\n",

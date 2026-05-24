@@ -1,31 +1,23 @@
 ---
 name: literature-survey-writer
 description: |
-  Use this skill as a production overlay on top of an existing literature-review/search skill and Zotero MCP. It coordinates the real survey-paper workflow: start from user keywords, reuse the baseline literature-reviewer skill for English-first search and candidate exports, import candidates into Zotero, retrieve full text, screen, enforce a mandatory reading gate, hand off to manuscript-writing, iterate with Web GPT/ChatGPT Pro review when approved, choose a target journal, revise to journal requirements, run reviewer-mode critique, and finish submission QA. Trigger for survey paper production, Zotero MCP literature workflows, Web GPT review loops, target-journal adaptation, reviewer mode, or manuscript hardening.
+  Use this skill for a complete literature review / survey manuscript workflow linked with Zotero MCP. It starts from user keywords, searches for candidate papers, captures DOI/BibTeX/RIS/URL metadata, imports candidates into Zotero through Zotero MCP or manual RIS/BibTeX fallback, retrieves full text, screens the corpus, enforces mandatory reading before central claims are written, builds evidence matrices and claim audits, drafts the manuscript, iterates with Web GPT/ChatGPT Pro review when approved, adapts the paper to a target journal, runs reviewer-mode critique, and finishes submission QA. Trigger for 文献综述, literature review, survey paper, Zotero MCP, paper search, RIS/BibTeX import, full-text reading, Web GPT review, journal adaptation, reviewer mode, or manuscript submission preparation.
 ---
 
-# Literature Survey Writer
+# Literature Review + Zotero MCP Workflow
 
-This is not a replacement for a literature-search skill. It is the layer that makes the whole paper-production loop behave.
-
-Use the baseline literature-reviewer skill for what it already does well:
-
-- turn keywords into English-first search queries
-- search scholarly platforms
-- deduplicate candidates
-- export `references.md`, `references.bib`, and `references.ris`
-- create first-pass paper lists and metadata
-
-Use this skill for the parts that usually break after that:
+This skill coordinates the full paper-production loop:
 
 ```text
 keywords
-  -> baseline literature-reviewer search/export
-  -> Zotero MCP import and attachment audit
+  -> paper search
+  -> DOI / URL / BibTeX / RIS capture
+  -> Zotero MCP import
+  -> full-text retrieval
   -> screening
   -> mandatory reading gate
   -> evidence matrix
-  -> manuscript-writing skill
+  -> manuscript writing
   -> Web GPT review loop
   -> target-journal adaptation
   -> reviewer-mode critique
@@ -49,8 +41,8 @@ keywords
 Create or maintain these files in the working session:
 
 ```text
-keywords_and_queries.md          # produced by baseline literature-reviewer skill
-candidate_export_status.md       # where references.md/BibTeX/RIS came from
+keywords_and_queries.md          # keywords, synonyms, Boolean queries, source plan
+candidate_export_status.md       # candidate lists and references.md/BibTeX/RIS status
 zotero_import_log.md             # MCP import or fallback import record
 screening_matrix.csv             # include/support/park/exclude decisions
 reading_queue.md                 # selected papers that must be read
@@ -70,17 +62,31 @@ Use `scripts/init_survey_loop.py` to scaffold these files when starting a new pr
 
 ### 1. Keywords To Candidate Papers
 
-Start from the user's keywords/topic. Invoke or follow the baseline literature-reviewer skill for search, deduplication, and export. Do not duplicate that skill's full search protocol here.
+Start from the user's keywords/topic. Generate:
 
-Expected outputs:
+- core English keywords
+- synonyms and adjacent terms
+- Boolean query strings
+- database/platform-specific query plans
+- exclusion terms for false positives
 
-- raw or deduplicated candidate list
-- `references.md`
-- `references.bib`
-- `references.ris`
-- search notes or query log
+Use scholarly sources appropriate to the topic, such as Google Scholar, Semantic Scholar, OpenAlex, Crossref, IEEE Xplore, ACM Digital Library, arXiv, PubMed, ScienceDirect, SpringerLink, Wiley, Taylor & Francis, SAGE, JSTOR, and publisher DOI pages.
 
-Record what exists in `candidate_export_status.md`.
+For each candidate paper, capture:
+
+```text
+title
+authors
+year
+venue
+DOI or URL
+source
+abstract if available
+initial theme
+why it may matter
+```
+
+Deduplicate by DOI first, then normalized title. Save candidate status in `candidate_export_status.md`. Create `references.md`, `references.bib`, or `references.ris` when useful for Zotero import.
 
 ### 2. Import Candidates Into Zotero
 
@@ -218,7 +224,7 @@ After reading, build `evidence_matrix.md`:
 |---|---|---|---|---|---|---|---|---|
 ```
 
-Then write `writing_handoff.md` for the manuscript-writing skill:
+Then write `writing_handoff.md`:
 
 - review question and scope
 - corpus counts and evidence hierarchy
@@ -230,7 +236,7 @@ Then write `writing_handoff.md` for the manuscript-writing skill:
 
 ### 7. Manuscript Writing
 
-Use a writing skill or manuscript-writing workflow after the reading gate passes.
+Write after the reading gate passes.
 
 Writing rules:
 
@@ -241,7 +247,7 @@ Writing rules:
 - state corpus limitations honestly
 - keep emerging areas marked as emerging when evidence is thin
 
-Writing handoff must include enough material for a separate writing skill or model to write without redoing search:
+Writing handoff must include enough material to write without redoing search:
 
 - read-paper count
 - support/background/gap-check counts

@@ -1,78 +1,69 @@
-# Literature Survey Writer
+# Literature Review + Zotero MCP Workflow
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-The missing middle of a serious survey-paper workflow.
+A Codex skill for turning keywords into a Zotero-backed literature review or survey manuscript.
 
-This is **not** trying to replace a literature-search skill. A lot of that work is already handled well by existing literature reviewer skills: take keywords, search Google Scholar / Semantic Scholar / OpenAlex / publisher sites, deduplicate, and export BibTeX/RIS.
-
-This skill starts where that usually stops being enough.
+It covers the whole loop:
 
 ```text
 keywords
-  -> baseline literature-reviewer skill finds candidate papers
-  -> Zotero MCP imports and audits them
-  -> selected papers are screened
-  -> screened-in papers must be read
-  -> read evidence becomes an evidence matrix
-  -> writing skill drafts the manuscript
-  -> Web GPT / ChatGPT Pro reviews it
-  -> target journal is chosen
-  -> paper is revised to that journal
-  -> reviewer mode attacks the draft again
+  -> paper search
+  -> BibTeX/RIS/DOI capture
+  -> Zotero MCP import
+  -> full-text retrieval
+  -> screening
+  -> mandatory reading
+  -> evidence matrix
+  -> manuscript writing
+  -> Web GPT / ChatGPT Pro review
+  -> target-journal adaptation
+  -> reviewer-mode critique
   -> final submission QA
 ```
 
-That is the workflow this repo is for.
+The core idea is simple:
+
+> Finding papers is not the same as reading papers.  
+> Importing papers into Zotero is not the same as understanding them.  
+> A claim in the manuscript should trace back to read evidence.
 
 ## Why This Exists
 
-Most AI literature-review workflows are fine at the first step:
+Most AI-assisted literature review workflows are good at the first step:
 
-> "Here are 50 papers about your topic."
+> "Here are papers related to your keywords."
 
-The real pain starts after that:
+The difficult part comes next:
 
-- Which papers actually belong in Zotero?
-- Which ones have full text?
-- Which ones have been read, not just imported?
-- Which claims are supported by read evidence?
-- When is the corpus enough to start writing?
-- How do you stop the draft from becoming one paragraph per paper?
-- How do you use Web GPT / ChatGPT Pro as a reviewer without manually copy-pasting forever?
-- After choosing a journal, how do you modify the paper to that journal instead of generic academic taste?
-- How do you run a reviewer-style attack before real reviewers do?
+- Which papers should actually enter the Zotero project?
+- Which ones have real full text?
+- Which papers were screened out, parked, or kept only for background?
+- Which papers were fully read?
+- Which claim can each paper support?
+- When is the corpus strong enough to start writing?
+- How do you avoid one-paper-one-paragraph writing?
+- How do you use Web GPT / ChatGPT Pro as a reviewer without losing track of revisions?
+- How do you adapt the paper to a chosen journal?
+- How do you run reviewer mode before actual reviewers see the paper?
 
-This skill is the coordinator for that loop.
+This skill keeps that chain explicit.
 
-## What It Adds On Top Of A Normal Literature Reviewer Skill
+## What The Skill Does
 
-The baseline literature reviewer skill should handle:
-
-- keyword expansion
-- English-first scholarly search
-- metadata capture
-- deduplication
-- BibTeX/RIS/Markdown exports
-
-This skill adds:
-
-- Zotero MCP import and fallback logging
-- full-text availability audit
-- screening decisions
-- a mandatory reading gate
-- evidence matrix and claim audit
-- handoff to a manuscript-writing workflow
-- local review-packet generation for Web GPT / ChatGPT Pro
-- journal requirement tracking
-- reviewer-mode critique
-- pre-submission QA
-
-The key rule is simple:
-
-> Zotero import is not reading.
-
-Central claims should come from papers marked as `full_text_read`.
+- Expands user keywords into search terms and query plans.
+- Captures candidate papers from scholarly sources.
+- Exports or records candidate metadata as Markdown, BibTeX, RIS, DOI, or URL lists.
+- Imports candidates into Zotero through Zotero MCP when available.
+- Provides a manual RIS/BibTeX fallback when Zotero MCP write mode is unavailable.
+- Checks PDF/full-text availability in Zotero.
+- Tracks whether each paper is unread, skimmed, full-text-read, unavailable, or parked.
+- Forces a reading gate before evidence-heavy writing.
+- Builds evidence matrices and claim audits.
+- Hands read evidence into manuscript writing.
+- Builds external GPT review packets.
+- Tracks target-journal requirements.
+- Runs reviewer-mode critique and pre-submission QA.
 
 ## Install
 
@@ -82,7 +73,7 @@ Recommended: ask Codex to install it for you.
 帮我安装这个 skill: https://github.com/LanqinYang/literature-survey-writer
 ```
 
-If you want to install manually, clone it into your Codex skills folder:
+Manual install:
 
 ```bash
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
@@ -94,7 +85,7 @@ Restart Codex after installation.
 Example prompt:
 
 ```text
-Use $literature-survey-writer with my existing literature-reviewer skill and Zotero MCP. Start from these keywords, import candidate papers to Zotero, screen them, force a reading queue, then prepare the writing handoff.
+Use $literature-survey-writer to start from these keywords, find papers, import them into Zotero with Zotero MCP, screen them, read the selected papers, and prepare the manuscript-writing handoff.
 ```
 
 ## Files
@@ -139,34 +130,61 @@ reviewer_mode_report.md
 pre_submission_checklist.md
 ```
 
-These files are intentionally boring. Their job is to stop the workflow from lying to itself.
+These files keep the workflow honest: what was found, what entered Zotero, what was screened, what was read, what can be claimed, and what still needs work.
 
-## Zotero MCP Role
+## Zotero MCP And RIS/BibTeX
 
-Zotero MCP is used for:
+With Zotero MCP, the skill can:
 
-- checking whether a candidate already exists
-- importing DOI/URL records
-- inspecting attachments
-- reading full text when available
-- separating metadata-only records from readable papers
-- tagging workflow states
+- search the local Zotero library before importing
+- add records by DOI or URL
+- inspect item children and attachments
+- read full text when a readable attachment exists
+- tag workflow states
+- check duplicates
 
-If MCP write mode is unavailable, the skill falls back to RIS/BibTeX imports and records that fallback in `zotero_import_log.md`.
-
-Manual RIS/BibTeX import fallback:
+If Zotero MCP cannot write, use the manual import fallback:
 
 ```text
 Zotero -> File -> Import... -> A file -> choose references.ris or references.bib
 ```
 
-Then move imported items into the project collection, check duplicates by DOI/title, and tag them as candidates.
+After import:
 
-For full text, the workflow checks whether Zotero already has a readable PDF attachment. If not, it tries Zotero's PDF/full-text retrieval path or uses the publisher/DOI/arXiv page with Zotero Connector. Missing PDFs are logged instead of quietly ignored.
+1. Move imported records into the project collection.
+2. Check duplicates by DOI/title.
+3. Tag imported items as candidates.
+4. Record the import file, count, and problems in `zotero_import_log.md`.
+
+Zotero can also import RIS/BibTeX from the clipboard with `File -> Import from Clipboard`; use that only for small batches.
+
+## Full Text In Zotero
+
+The workflow checks whether each imported paper has readable full text:
+
+1. Check whether the Zotero item has a PDF attachment.
+2. If a PDF exists, read it through Zotero MCP when possible.
+3. If only metadata exists, try Zotero's PDF/full-text retrieval path or use the publisher/DOI/arXiv page with Zotero Connector.
+4. If a legal PDF is found elsewhere, attach it to the correct Zotero parent item or mark it as externally readable.
+5. If full text cannot be retrieved, mark it clearly instead of pretending it was read.
+
+Useful full-text states:
+
+```text
+zotero_pdf_readable
+zotero_metadata_only
+external_fulltext_available
+abstract_only
+needs_pdf_attachment
+unavailable
+duplicate_or_version
+```
 
 ## Reading Gate
 
-Before writing evidence-heavy sections, every core paper should have:
+Before writing evidence-heavy manuscript sections, core screened-in papers must be read.
+
+Each core paper should have:
 
 ```text
 citation
@@ -190,13 +208,18 @@ cannot_read
 parked
 ```
 
-Only `full_text_read` should support central claims.
+Rules:
 
-The intended rule is stronger than "sample a few papers": all core screened-in papers must be read, and every central claim should map back to reading notes.
+- All `include_core` papers must be read.
+- Important `include_supporting` papers should be read or downgraded.
+- Only `full_text_read` should support central claims.
+- `skimmed` is for background framing.
+- metadata-only or abstract-only records are for gap checking, not central claims.
+- The agent should not say "all papers were read" unless reading notes exist.
 
 ## Web GPT / ChatGPT Pro Review
 
-The helper script builds a local packet:
+The helper script builds a local review packet:
 
 ```bash
 python3 scripts/build_external_review_packet.py \
@@ -208,29 +231,29 @@ python3 scripts/build_external_review_packet.py \
 
 The script does **not** upload anything.
 
-If an agent is going to paste the packet into Web GPT / ChatGPT Pro, it should ask first and state exactly what will be shared.
+If an agent will paste the packet into Web GPT / ChatGPT Pro, it must first state what will be shared and get explicit approval.
 
 ## Journal And Reviewer Loop
 
 After the manuscript stabilizes:
 
 1. Choose or confirm the target journal.
-2. Record the journal's requirements.
-3. Revise the paper to that journal.
+2. Record journal requirements: scope, article type, word/page limits, citation style, figures, declarations, AI disclosure, data availability, and required files.
+3. Revise the paper to the journal.
 4. Run reviewer mode.
 5. Revise again.
 6. Run final QA.
 
-This is where the paper becomes submission-shaped rather than just "well written."
+This is where the manuscript becomes submission-shaped rather than merely "well written."
 
 ## Privacy
 
 Do not commit live project artifacts to a public repo:
 
-- manuscripts
+- unpublished manuscripts
 - PDFs or DOCX files
-- Zotero exports from an active project
-- review packets
+- active Zotero exports
+- external review packets
 - author metadata
 - reviewer comments
 - submission forms

@@ -1,8 +1,8 @@
 interface:
-  display_name: "Literature Survey Writer"
-  short_description: "Zotero-to-manuscript survey loop"
+  display_name: "Literature Review + Zotero MCP"
+  short_description: "Literature review workflow linked to Zotero MCP"
   brand_color: "#2563EB"
-  default_prompt: "Use $literature-survey-writer with my literature-search workflow and Zotero MCP to screen, read, write, review, adapt to a target journal, and QA a survey manuscript."
+  default_prompt: "Use $literature-survey-writer to start from my keywords, find papers, import them with Zotero MCP, read selected full texts, write the review, run Web GPT review, adapt to a target journal, and QA the manuscript."
 
 dependencies:
   tools:
