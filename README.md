@@ -1,51 +1,62 @@
 # Literature Survey Writer
 
-An Agent Skill for building evidence-grounded academic survey papers with Zotero-backed corpus auditing, synthesis-first drafting, external GPT review loops, and submission-package QA.
+Turn a messy paper pile into a review article that can actually survive revision.
 
-This skill is designed for researchers who do not just want a list of papers. It helps an agent move from a topic or an existing Zotero library to a traceable literature corpus, a synthesis-heavy manuscript, an external review packet, and a final checklist for journal submission.
-
-## What It Does
-
-- Audits existing Zotero collections, BibTeX/RIS exports, or local session folders.
-- Separates full-text evidence, abstract/metadata-level records, parked records, and duplicates.
-- Builds reading matrices, corpus audits, claim audits, and citation consistency checks.
-- Guides survey-paper drafting around themes, systems patterns, comparison tables, and evidence gaps.
-- Generates external GPT review packets without uploading anything automatically.
-- Supports revision loops that turn review feedback into actionable writing/checking tasks.
-- Keeps manuscript claims bounded by the available corpus.
-
-## When To Use It
-
-Use this skill when you are working on:
-
-- literature reviews or survey papers
-- Zotero-backed manuscript workflows
-- BibTeX/RIS export and cleanup
-- paper-corpus auditing
-- synthesis-heavy related-work sections
-- reviewer-style critique and revision prompts
-- pre-submission manuscript QA
-
-Chinese/CNKI workflows are intentionally opt-in. The default workflow is English-first.
-
-## Repository Layout
+This is an Agent Skill for writing academic literature surveys with a real working loop:
 
 ```text
-literature-survey-writer/
-├── SKILL.md
-├── agents/
-│   └── openai.yaml
-├── scripts/
-│   └── build_external_review_packet.py
-├── .gitignore
-└── README.md
+topic or Zotero library
+  -> corpus audit
+  -> evidence matrix
+  -> synthesis-heavy draft
+  -> external GPT review packet
+  -> revision checklist
+  -> submission QA
 ```
 
-`SKILL.md` is the main file read by compatible agents. `agents/openai.yaml` provides UI-facing metadata and declares the optional Zotero MCP dependency. The script folder contains a small deterministic helper for building review packets.
+It started from the very practical problem most literature-review tools do not solve: finding papers is only the first 20%. The hard part is knowing whether the corpus is enough, which claims are actually supported, how to avoid turning the paper into a giant annotated bibliography, and how to keep revisions from drifting away from the evidence.
 
-## Installation
+## Why This Exists
 
-Clone this repository into your Codex skills directory:
+Most "literature review" prompts produce one of two things:
+
+- a polite list of papers
+- a generic mini-essay with citations sprinkled in
+
+That is not enough for a serious survey manuscript.
+
+This skill is built for the more annoying, more useful workflow:
+
+- You already have papers in Zotero, but you do not know whether the corpus is balanced.
+- Some papers have full text, some only have metadata, some are duplicates, and some are probably not worth reading.
+- You need a survey that synthesizes patterns across papers, not one paragraph per paper.
+- You want another model, such as ChatGPT / Web GPT Pro, to critique the draft, but you do not want to paste everything manually forever.
+- You need submission-facing checks: citations, tables, figures, page count, declarations, and remaining author-confirmation items.
+
+## What The Skill Does
+
+It helps an agent:
+
+- audit a Zotero collection or local reference export
+- separate full-text evidence from abstract-only or metadata-only records
+- build reading matrices and claim audits
+- decide whether the corpus is enough to start writing
+- draft around themes, systems, tensions, and gaps
+- create a safe external-review packet for another GPT model
+- turn critique into a concrete revision checklist
+- prepare manuscript QA artifacts before submission
+
+The default workflow is English-first. Chinese/CNKI workflows are opt-in, not the default.
+
+## What It Is Not
+
+This is not a magic paper generator.
+
+It will not make unsupported novelty claims true. It will not turn a weak corpus into a systematic review. It will not upload your unpublished manuscript somewhere without permission. It is designed to keep the writing process honest, traceable, and less chaotic.
+
+## Install
+
+Clone the repo into your Codex skills folder:
 
 ```bash
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
@@ -53,49 +64,63 @@ git clone https://github.com/LanqinYang/literature-survey-writer.git \
   "${CODEX_HOME:-$HOME/.codex}/skills/literature-survey-writer"
 ```
 
-Restart Codex so it can discover the new skill metadata.
+Restart Codex so it can discover the skill.
 
-You can then invoke it naturally:
-
-```text
-Use $literature-survey-writer to audit my Zotero-backed corpus and draft a survey-paper revision plan.
-```
-
-Or describe the task directly:
+Then use it like this:
 
 ```text
-I have a Zotero collection and a draft survey paper. Check whether the corpus is enough, identify evidence gaps, and prepare a revision checklist.
+Use $literature-survey-writer to audit my Zotero-backed corpus and tell me whether it is enough for a survey paper.
 ```
 
-## Zotero MCP
+Or:
 
-The skill works best with Zotero MCP enabled, but it can still use local exports.
+```text
+Use $literature-survey-writer to turn this draft into a stronger synthesis-heavy survey and prepare a pre-submission checklist.
+```
 
-With Zotero MCP, the agent can:
+## Files
 
-- search collections and metadata
-- inspect item children and PDF availability
-- read annotations or full text when attachments are available
-- check duplicates and tags
-- add records by DOI/URL when write mode is configured
+```text
+literature-survey-writer/
+├── SKILL.md                              # agent instructions
+├── agents/openai.yaml                    # Codex-facing metadata
+├── scripts/build_external_review_packet.py
+├── .gitignore
+└── README.md
+```
 
-If Zotero MCP is read-only or local-only, the skill falls back to export files such as:
+`SKILL.md` is the real skill. This README is just the front door for humans browsing GitHub.
+
+## Zotero Workflow
+
+The skill works best when Zotero MCP is available, but it can still work from local exports.
+
+Useful inputs include:
 
 ```text
 references.md
 references.bib
 references.ris
-reading_matrix.md
 corpus_audit.md
+reading_matrix.md
+claim_audit.md
+citation_consistency_audit.md
 ```
 
-The skill treats Zotero as a reference manager and audit workspace, not as a bibliographic database or search engine.
+The skill treats Zotero as a reference manager and audit workspace. It does not pretend Zotero is a scholarly search database.
 
-## External GPT Review Packet
+If Zotero MCP can only read locally, the skill falls back to BibTeX/RIS/CSV exports instead of forcing direct writes.
 
-The included helper script builds a Markdown packet that can be pasted into ChatGPT, Web GPT Pro, or another external reviewer after the user explicitly approves sharing the manuscript text.
+## External GPT Review
 
-Example:
+One real use case is this loop:
+
+1. Codex writes or revises the manuscript.
+2. A stronger web model reviews it.
+3. The web model returns critique and a revision prompt.
+4. Codex applies the prompt, but only where the evidence supports it.
+
+The helper script packages the draft and supporting notes into a Markdown review packet:
 
 ```bash
 python3 scripts/build_external_review_packet.py \
@@ -105,37 +130,40 @@ python3 scripts/build_external_review_packet.py \
   --notes path/to/corpus_audit.md path/to/citation_consistency_audit.md
 ```
 
-The script does not upload files, call an API, or contact a third-party service. It only creates a local Markdown review packet.
+The script does **not** upload anything. It only creates a local file.
 
-## Privacy And Safety
+If you want an agent to open ChatGPT / Web GPT Pro and paste the packet, the skill requires explicit approval first, because unpublished manuscripts and Zotero notes can be sensitive.
 
-This workflow may involve unpublished manuscripts, author metadata, Zotero libraries, PDFs, annotations, and reviewer feedback. The skill therefore requires an explicit consent gate before any external upload.
+## Privacy Rules
 
-By default:
+By default, keep these out of public repos:
 
-- no manuscript is sent to external GPT services automatically
-- no Zotero collection is uploaded automatically
-- no PDF, DOCX, BibTeX, RIS, or CSV artifact should be committed to a public repo
-- generated review packets should stay local unless the user approves sharing
+- unpublished manuscripts
+- Zotero libraries and exported reading notes
+- PDFs and DOCX files
+- BibTeX/RIS/CSV files from a live project
+- external GPT review packets
+- author metadata, emails, ORCID IDs, and submission forms
 
-The `.gitignore` is intentionally conservative and excludes common manuscript and reference artifacts.
+The included `.gitignore` is intentionally conservative for that reason.
 
-## Suggested Workflow
+## A Good Run Looks Like
 
-1. Start with a topic, Zotero collection, or existing manuscript session.
-2. Audit the corpus and classify evidence levels.
-3. Build a reading matrix and claim audit.
-4. Draft or revise the survey around synthesis rather than paper-by-paper summaries.
-5. Generate an external review packet if a second-model review is useful.
-6. Convert feedback into critical, high, medium, and optional revision items.
-7. Rebuild the submission package and run citation, figure, table, and page-count checks.
+A good workflow usually produces artifacts like:
 
-## Design Notes
+```text
+corpus_audit.md
+reading_matrix.md
+claim_audit.md
+review_outline.md
+literature_review_draft_v01.md
+external_review_packet.md
+revision_checklist.md
+pre_submission_checklist.md
+```
 
-This skill follows the Agent Skills pattern: keep `SKILL.md` as the primary agent-facing instruction file, use optional scripts for deterministic work, and keep detailed local manuscript artifacts outside the public skill repo.
-
-The repository-level README is for human users browsing GitHub. Compatible agents should load `SKILL.md`, not this README, as the operational instruction source.
+The important part is not the filenames. The important part is that claims, citations, evidence level, and revision decisions stay connected.
 
 ## License
 
-No license file has been added yet. Add a license before redistributing or accepting external contributions.
+No license file has been added yet. Add one before inviting reuse or contributions.
