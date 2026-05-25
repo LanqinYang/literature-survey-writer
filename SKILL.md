@@ -1,7 +1,7 @@
 ---
 name: literature-survey-writer
 description: |
-  Use this skill for a complete literature review / survey manuscript workflow linked with Zotero MCP. It starts from user keywords, searches for candidate papers, captures DOI/BibTeX/RIS/URL metadata, imports candidates into Zotero through Zotero MCP or manual RIS/BibTeX fallback, retrieves full text, screens the corpus, enforces mandatory reading before central claims are written, builds evidence matrices and claim audits, drafts the manuscript, iterates with Web GPT/ChatGPT Pro review when approved, adapts the paper to a target journal, runs reviewer-mode critique, and finishes submission QA. Trigger for 文献综述, literature review, survey paper, Zotero MCP, paper search, RIS/BibTeX import, full-text reading, Web GPT review, journal adaptation, reviewer mode, or manuscript submission preparation.
+  Use this skill for a complete literature review / survey manuscript workflow linked with Zotero MCP. It starts from user keywords, searches for candidate papers, captures DOI/BibTeX/RIS/URL metadata, imports candidates into Zotero through Zotero MCP or manual RIS/BibTeX fallback, retrieves full text, screens the corpus, enforces mandatory reading before central claims are written, builds evidence matrices and claim audits, drafts the manuscript, iterates with approved Atlas/ChatGPT Pro review through the GitHub source connector or local review packets, adapts the paper to a target journal, runs reviewer-mode critique, and finishes submission QA. Trigger for 文献综述, literature review, survey paper, Zotero MCP, paper search, RIS/BibTeX import, full-text reading, Atlas GitHub review, Web GPT review, journal adaptation, reviewer mode, or manuscript submission preparation.
 ---
 
 # Literature Review + Zotero MCP Workflow
@@ -18,7 +18,7 @@ keywords
   -> mandatory reading gate
   -> evidence matrix
   -> manuscript writing
-  -> Web GPT review loop
+  -> optional Atlas / ChatGPT Pro review through GitHub source
   -> target-journal adaptation
   -> reviewer-mode critique
   -> submission QA
@@ -257,7 +257,7 @@ Writing handoff must include enough material to write without redoing search:
 - citation style preference if already known
 - claims that must be softened or avoided
 
-### 8. Web GPT Review Loop
+### 8. Atlas / External GPT Review
 
 Use `scripts/build_external_review_packet.py` to create a local review packet.
 
@@ -267,13 +267,24 @@ Before uploading anything externally:
 2. Say whether it includes unpublished manuscript text, references, author metadata, Zotero notes, or reviewer materials.
 3. Ask for explicit approval.
 
-After Web GPT / ChatGPT Pro returns feedback:
+If Web GPT / ChatGPT Pro or another external reviewer returns feedback:
 
 - save it in `web_gpt_review_log.md`
 - extract the revision prompt
 - convert the critique into critical/high/medium/optional tasks
 - revise only where the evidence supports the change
 - repeat until the draft stabilizes
+
+Tested Atlas / ChatGPT Pro GitHub-source loop:
+
+1. Push the sanitized public repo or branch to GitHub.
+2. In ChatGPT Atlas, click `+`.
+3. Choose `More`.
+4. Choose `GitHub` as the source.
+5. Ask ChatGPT Pro to read the public README or named repo files and return feedback plus a revision prompt.
+6. Bring the feedback back to Codex, save it in `web_gpt_review_log.md`, revise, commit, push, and repeat.
+
+Do not treat plain URL pasting as reliable. In testing, directly pasting a GitHub URL could be handled as search/chat text rather than as repo access. The GitHub source connector step is required.
 
 ### 9. Target Journal Selection And Adaptation
 
