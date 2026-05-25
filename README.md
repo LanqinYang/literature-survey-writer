@@ -265,9 +265,22 @@ Tested Atlas route on 2026-05-25:
 4. Choose `More`.
 5. Choose `GitHub` as the source.
 6. Ask ChatGPT Pro to read the public GitHub README or specific repo files and return feedback plus a revision prompt.
-7. Bring the feedback back to Codex, save it in `web_gpt_review_log.md`, revise, commit, and repeat.
+7. Codex uses browser/computer automation to copy the ChatGPT response, reads it from the clipboard, saves it in `web_gpt_review_log.md`, revises, commits, pushes, and repeats.
 
 Directly pasting a GitHub URL without selecting the GitHub source was not reliable in testing. Treat the source-selection step as required.
+
+The return path should also be automated. Do not ask the user to manually copy/paste the review unless browser automation is blocked.
+
+Automated return path:
+
+1. Wait for Atlas / ChatGPT Pro to finish.
+2. Click the response copy button with Computer Use.
+3. Read the clipboard locally.
+4. Append the raw feedback and extracted revision prompt to `web_gpt_review_log.md`.
+5. Convert the revision prompt into concrete edits.
+6. Apply edits, run checks, commit, push, and start the next review round if needed.
+
+This is not a direct API bridge from ChatGPT back into Codex. It is a browser-controlled clipboard bridge, run by Codex.
 
 ## Journal And Reviewer Loop
 

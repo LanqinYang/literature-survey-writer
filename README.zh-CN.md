@@ -262,9 +262,22 @@ python3 scripts/build_external_review_packet.py \
 3. 选择 `更多`。
 4. 选择 `GitHub` 作为 source。
 5. 让 ChatGPT Pro 读取公开 GitHub README 或指定 repo 文件，并返回 feedback 和 revision prompt。
-6. 把 feedback 带回 Codex，记录到 `web_gpt_review_log.md`，修改、提交、再循环。
+6. Codex 用浏览器/Computer Use 自动点击复制 ChatGPT 回复，从剪贴板读取内容，记录到 `web_gpt_review_log.md`，修改、提交、push、再循环。
 
 单纯把 GitHub URL 直接贴进输入框不稳定，测试时会被当成普通搜索/聊天内容。要把这条流程写进 skill，就必须强调先选 GitHub source。
+
+返回 Codex 这一步也应该自动化。除非浏览器自动化被挡住，不要让用户手动复制粘贴。
+
+自动返回路径：
+
+1. 等 Atlas / ChatGPT Pro 完成回复。
+2. Codex 用 Computer Use 点击回复的复制按钮。
+3. Codex 在本地读取剪贴板。
+4. 把原始 feedback 和提取出来的 revision prompt 追加到 `web_gpt_review_log.md`。
+5. 把 revision prompt 转成具体修改任务。
+6. 修改、检查、commit、push；需要的话进入下一轮 review。
+
+这不是 ChatGPT 直接调用 Codex 的 API。它本质上是 Codex 控制浏览器和剪贴板完成的自动桥接。
 
 ## 定刊和 Reviewer Mode
 
