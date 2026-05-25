@@ -2,24 +2,26 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-一个把关键词、文献检索、Zotero MCP、全文阅读、综述写作和投稿 QA 串起来的 Codex skill。
+这个 fork 基于 [AI-Powered-Literature-Review-Skills](https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills)。
 
-它覆盖完整链路：
+原版已经做了很多事：关键词扩展、英文优先文献检索、浏览器访问数据库、去重、Markdown/BibTeX/RIS 导出、引用格式化、单篇分析、综述草稿和 review/final 阶段。
+
+这个版本保留这些基础，但重点补我们真实写综述时后面更容易乱的部分：**Zotero MCP、全文阅读状态、证据到文章的控制链**。
+
+流程大概是：
 
 ```text
 关键词
-  -> 文献检索
-  -> BibTeX / RIS / DOI 捕获
-  -> Zotero MCP 导入
-  -> 获取全文
-  -> 筛选
-  -> 必须阅读
-  -> evidence matrix
-  -> 写文章
-  -> Web GPT / ChatGPT Pro 审稿
-  -> 定目标期刊
-  -> 按期刊要求修改
-  -> reviewer mode 再审一遍
+  -> 文献检索和导出
+  -> Zotero MCP 导入或 RIS/BibTeX fallback
+  -> PDF / 全文状态检查
+  -> 筛选和文献角色分层
+  -> 强制阅读 gate
+  -> evidence matrix 和 claim audit
+  -> 基于已读证据写文章
+  -> Web GPT / ChatGPT Pro review loop
+  -> 按目标期刊修改
+  -> reviewer mode 压力测试
   -> 最终投稿 QA
 ```
 
@@ -29,41 +31,44 @@
 > 导入 Zotero 不等于理解文献。  
 > 文章里的中心论点应该能追溯到已读证据。
 
-## 为什么需要这个
+## 原版已经覆盖什么
 
-很多 AI 文献综述流程第一步都还可以：
+原版已经覆盖前半段，而且做得不少：
 
-> 这是与你关键词相关的文献。
+- 从主题生成关键词和布尔检索式
+- 英文优先学术数据库检索
+- 可选中文/CNKI 流程
+- 抓取标题、作者、年份、期刊、DOI、摘要等元数据
+- 候选文献去重
+- 导出 `references.md`、`references.bib`、`references.ris`
+- 引用格式化
+- 单篇文献分析
+- 综述草稿、审查、润色
 
-真正麻烦的是后面：
+所以这些不应该算成这个 fork 自己的新功能。
 
-- 哪些文献应该进 Zotero？
-- 哪些文献有全文？
-- 哪些文献筛掉、暂存、只做背景？
-- 哪些文献真的读过？
-- 每篇文献能支撑哪个 claim？
-- 什么时候 corpus 足够开始写？
-- 怎么避免写成“一篇 paper 一段话”？
-- 怎么让 Web GPT / ChatGPT Pro 反复当审稿人，同时不丢修改记录？
-- 定了期刊以后，怎么按期刊 guide 改？
-- 真正投稿前，怎么先用 reviewer mode 打自己一遍？
+## 这个 Fork 补什么
 
-这个 skill 的作用就是把这些环节显式串起来。
+这个版本重点补的是文献列表之后的流程：
 
-## 这个 Skill 做什么
+- Zotero MCP 直接导入，而不只是导出 Zotero 可导入文件。
+- Zotero MCP 不能写入时，保留 RIS/BibTeX 手动导入 fallback。
+- 检查 Zotero 里的 PDF / 全文附件。
+- 明确记录 metadata-only、abstract-only、readable PDF、missing PDF、duplicate/version、parked 等状态。
+- 写 evidence-heavy 正文前，必须过 reading gate。
+- 用 `evidence_matrix.md` 和 `claim_audit.md` 接住已读证据。
+- Web GPT / ChatGPT Pro review packet 循环。
+- 定目标期刊、按 guide 修改、reviewer mode 和投稿 QA。
 
-- 把用户关键词扩展成检索词和 query plan。
-- 捕获候选论文的 DOI、URL、BibTeX、RIS 或元数据。
-- 通过 Zotero MCP 把候选文献导入 Zotero。
-- 当 Zotero MCP 不能写入时，提供 RIS/BibTeX 手动导入 fallback。
-- 检查 Zotero 里是否有 PDF / 全文。
-- 跟踪每篇文章的状态：未读、略读、全文已读、无法读取、暂存。
-- 强制阅读 gate：中心论点不能建立在 metadata 上。
-- 建 evidence matrix 和 claim audit。
-- 把已读证据交给写作阶段。
-- 生成 Web GPT / ChatGPT Pro review packet。
-- 记录目标期刊要求。
-- 做 reviewer mode 和投稿前 QA。
+说白了，它是为了防止流程变成：
+
+> 我们导入了一堆 Zotero 条目，所以我们已经完成文献综述了。
+
+## 核心规则
+
+> Zotero import is not reading.
+
+导入 Zotero 不等于读过。中心论点应该来自 `full_text_read` 的文献，并且要有 reading notes 说明这篇文献到底支撑了什么。
 
 ## 安装
 

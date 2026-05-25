@@ -2,23 +2,26 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-A Codex skill for turning keywords into a Zotero-backed literature review or survey manuscript.
+This fork is based on [AI-Powered-Literature-Review-Skills](https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills).
 
-It covers the whole loop:
+The upstream skill already does a lot: keyword expansion, English-first literature search, database browsing, deduplication, Markdown/BibTeX/RIS export, citation formatting, paper analysis, and draft/review/final synthesis.
+
+This version keeps that base, but leans hard into the part that gets messy in real projects: **Zotero MCP + full-text reading + evidence-to-manuscript control**.
+
+The workflow looks like this:
 
 ```text
 keywords
-  -> paper search
-  -> BibTeX/RIS/DOI capture
-  -> Zotero MCP import
-  -> full-text retrieval
-  -> screening
-  -> mandatory reading
-  -> evidence matrix
-  -> manuscript writing
-  -> Web GPT / ChatGPT Pro review
+  -> search/export from the literature-review workflow
+  -> Zotero MCP import or RIS/BibTeX fallback
+  -> PDF / full-text audit
+  -> screening and role assignment
+  -> mandatory reading gate
+  -> evidence matrix and claim audit
+  -> manuscript writing from read evidence
+  -> Web GPT / ChatGPT Pro review loop
   -> target-journal adaptation
-  -> reviewer-mode critique
+  -> reviewer-mode stress test
   -> final submission QA
 ```
 
@@ -28,42 +31,44 @@ The core idea is simple:
 > Importing papers into Zotero is not the same as understanding them.  
 > A claim in the manuscript should trace back to read evidence.
 
-## Why This Exists
+## What Upstream Already Covers
 
-Most AI-assisted literature review workflows are good at the first step:
+The original skill already covers the front half well:
 
-> "Here are papers related to your keywords."
+- turning a topic into search keywords and Boolean queries
+- searching English-first scholarly sources
+- optional Chinese/CNKI flow
+- collecting title/author/year/venue/DOI/abstract metadata
+- deduplicating candidates
+- exporting `references.md`, `references.bib`, and `references.ris`
+- formatting citations
+- creating paper analysis and literature-review drafts
+- running a draft review/finalization phase
 
-The difficult part comes next:
+So this fork should not pretend those are new.
 
-- Which papers should actually enter the Zotero project?
-- Which ones have real full text?
-- Which papers were screened out, parked, or kept only for background?
-- Which papers were fully read?
-- Which claim can each paper support?
-- When is the corpus strong enough to start writing?
-- How do you avoid one-paper-one-paragraph writing?
-- How do you use Web GPT / ChatGPT Pro as a reviewer without losing track of revisions?
-- How do you adapt the paper to a chosen journal?
-- How do you run reviewer mode before actual reviewers see the paper?
+## What This Fork Adds
 
-This skill keeps that chain explicit.
+The extra focus here is what happens after the paper list exists:
 
-## What The Skill Does
+- Zotero MCP import instead of only Zotero-compatible exports.
+- A fallback path for manual RIS/BibTeX import when MCP write mode is unavailable.
+- Full-text / PDF attachment audit inside Zotero.
+- Explicit states for metadata-only, abstract-only, readable PDF, missing PDF, duplicate/version, and parked papers.
+- A stricter reading gate before evidence-heavy writing.
+- `evidence_matrix.md` and `claim_audit.md` as handoff files.
+- A Web GPT / ChatGPT Pro review-packet loop.
+- Target-journal requirements and reviewer-mode QA.
 
-- Expands user keywords into search terms and query plans.
-- Captures candidate papers from scholarly sources.
-- Exports or records candidate metadata as Markdown, BibTeX, RIS, DOI, or URL lists.
-- Imports candidates into Zotero through Zotero MCP when available.
-- Provides a manual RIS/BibTeX fallback when Zotero MCP write mode is unavailable.
-- Checks PDF/full-text availability in Zotero.
-- Tracks whether each paper is unread, skimmed, full-text-read, unavailable, or parked.
-- Forces a reading gate before evidence-heavy writing.
-- Builds evidence matrices and claim audits.
-- Hands read evidence into manuscript writing.
-- Builds external GPT review packets.
-- Tracks target-journal requirements.
-- Runs reviewer-mode critique and pre-submission QA.
+Or, less politely:
+
+> It tries to stop the workflow from saying "we reviewed the literature" when all we really did was import a pile of records.
+
+## The Rule
+
+> Zotero import is not reading.
+
+Central claims should come from papers marked as `full_text_read`, with notes that explain what the paper actually supports.
 
 ## Install
 
