@@ -6,7 +6,11 @@ This fork is based on [AI-Powered-Literature-Review-Skills](https://github.com/s
 
 The upstream skill already does a lot: keyword expansion, English-first literature search, database browsing, deduplication, Markdown/BibTeX/RIS export, citation formatting, paper analysis, and draft/review/final synthesis.
 
-This version keeps that base, but leans hard into the part that gets messy in real projects: **Zotero MCP + full-text reading + evidence-to-manuscript control**.
+This version keeps that base, but leans hard into the part that gets messy in real projects: turning search results into an **evidence-controlled survey manuscript** through Zotero MCP, reading gates, claim audits, and review loops.
+
+In one sentence:
+
+> A Codex skill for moving from literature search results to survey drafts without letting "imported into Zotero" quietly become "read and understood."
 
 The workflow looks like this:
 
@@ -19,7 +23,7 @@ keywords
   -> mandatory reading gate
   -> evidence matrix and claim audit
   -> manuscript writing from read evidence
-  -> Web GPT / ChatGPT Pro review loop
+  -> optional Atlas / ChatGPT Pro review through GitHub source
   -> target-journal adaptation
   -> reviewer-mode stress test
   -> final submission QA
@@ -57,12 +61,27 @@ The extra focus here is what happens after the paper list exists:
 - Explicit states for metadata-only, abstract-only, readable PDF, missing PDF, duplicate/version, and parked papers.
 - A stricter reading gate before evidence-heavy writing.
 - `evidence_matrix.md` and `claim_audit.md` as handoff files.
-- A Web GPT / ChatGPT Pro review-packet loop.
+- An optional external GPT review packet, plus a tested Atlas / ChatGPT Pro path using the GitHub source connector.
 - Target-journal requirements and reviewer-mode QA.
 
 Or, less politely:
 
 > It tries to stop the workflow from saying "we reviewed the literature" when all we really did was import a pile of records.
+
+## Who This Is For
+
+Good fit:
+
+- PhD/MSc students writing survey papers.
+- Researchers preparing journal literature-review sections.
+- Codex users who want Zotero-backed evidence control, not just citation collection.
+- Anyone who needs every central claim to trace back to reading notes.
+
+Not the right promise:
+
+- It is not a one-click paper generator.
+- It does not replace reading core papers.
+- It does not make private manuscripts safe to paste into external GPT tools.
 
 ## The Rule
 
@@ -222,7 +241,7 @@ Rules:
 - metadata-only or abstract-only records are for gap checking, not central claims.
 - The agent should not say "all papers were read" unless reading notes exist.
 
-## Web GPT / ChatGPT Pro Review
+## Atlas / External GPT Review
 
 The helper script builds a local review packet:
 
@@ -236,7 +255,19 @@ python3 scripts/build_external_review_packet.py \
 
 The script does **not** upload anything.
 
-If an agent will paste the packet into Web GPT / ChatGPT Pro, it must first state what will be shared and get explicit approval.
+If an agent will paste the packet into Web GPT / ChatGPT Pro, or ask Web GPT to read a GitHub URL, it must first state what will be shared and get explicit approval.
+
+Tested Atlas route on 2026-05-25:
+
+1. Push the public, sanitized repo state to GitHub.
+2. In ChatGPT Atlas, open the prompt composer.
+3. Click `+`.
+4. Choose `More`.
+5. Choose `GitHub` as the source.
+6. Ask ChatGPT Pro to read the public GitHub README or specific repo files and return feedback plus a revision prompt.
+7. Bring the feedback back to Codex, save it in `web_gpt_review_log.md`, revise, commit, and repeat.
+
+Directly pasting a GitHub URL without selecting the GitHub source was not reliable in testing. Treat the source-selection step as required.
 
 ## Journal And Reviewer Loop
 

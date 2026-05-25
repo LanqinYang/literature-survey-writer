@@ -6,7 +6,11 @@
 
 原版已经做了很多事：关键词扩展、英文优先文献检索、浏览器访问数据库、去重、Markdown/BibTeX/RIS 导出、引用格式化、单篇分析、综述草稿和 review/final 阶段。
 
-这个版本保留这些基础，但重点补我们真实写综述时后面更容易乱的部分：**Zotero MCP、全文阅读状态、证据到文章的控制链**。
+这个版本保留这些基础，但重点补我们真实写综述时后面更容易乱的部分：用 **Zotero MCP、阅读 gate、claim audit、外部审稿循环**，把搜索结果变成有证据控制的综述稿。
+
+一句话版：
+
+> 它不是让 Codex 假装“导入 Zotero = 已经读过”，而是逼着流程把每个中心论点接回已读证据。
 
 流程大概是：
 
@@ -19,7 +23,7 @@
   -> 强制阅读 gate
   -> evidence matrix 和 claim audit
   -> 基于已读证据写文章
-  -> Web GPT / ChatGPT Pro review loop
+  -> 可选 Atlas / ChatGPT Pro + GitHub source review
   -> 按目标期刊修改
   -> reviewer mode 压力测试
   -> 最终投稿 QA
@@ -57,12 +61,27 @@
 - 明确记录 metadata-only、abstract-only、readable PDF、missing PDF、duplicate/version、parked 等状态。
 - 写 evidence-heavy 正文前，必须过 reading gate。
 - 用 `evidence_matrix.md` 和 `claim_audit.md` 接住已读证据。
-- Web GPT / ChatGPT Pro review packet 循环。
+- 可选的 external GPT review packet，以及已经实测过的 Atlas / ChatGPT Pro + GitHub source review 路径。
 - 定目标期刊、按 guide 修改、reviewer mode 和投稿 QA。
 
 说白了，它是为了防止流程变成：
 
 > 我们导入了一堆 Zotero 条目，所以我们已经完成文献综述了。
+
+## 适合谁
+
+适合：
+
+- 正在写 survey paper 的 PhD/MSc 学生。
+- 需要写 journal literature review section 的研究者。
+- 想让 Codex 和 Zotero 联动、但又怕 citation pile 变成幻觉综述的人。
+- 需要每个中心论点都能回到 reading notes 的项目。
+
+不承诺：
+
+- 它不是一键生成论文。
+- 它不会替你读核心文献。
+- 它不会让未发表稿件自动适合发给外部 GPT。
 
 ## 核心规则
 
@@ -220,7 +239,7 @@ parked
 - metadata-only / abstract-only 只能做 gap checking。
 - 没有 reading notes，就不能说“都读完了”。
 
-## Web GPT / ChatGPT Pro 审稿
+## Atlas / External GPT Review
 
 脚本会生成本地 review packet：
 
@@ -234,7 +253,18 @@ python3 scripts/build_external_review_packet.py \
 
 这个脚本**不会上传任何东西**。
 
-如果要让 agent 把 packet 粘贴到 Web GPT / ChatGPT Pro，必须先说明会分享什么，并得到明确同意。
+如果要让 agent 把 packet 粘贴到 Web GPT / ChatGPT Pro，或者让 Web GPT 读取 GitHub 链接，必须先说明会分享什么，并得到明确同意。
+
+2026-05-25 在 Atlas 里实测可跑通的路径：
+
+1. 先把公开、脱敏后的 repo 状态 push 到 GitHub。
+2. 在 ChatGPT Atlas 的输入框里点 `+`。
+3. 选择 `更多`。
+4. 选择 `GitHub` 作为 source。
+5. 让 ChatGPT Pro 读取公开 GitHub README 或指定 repo 文件，并返回 feedback 和 revision prompt。
+6. 把 feedback 带回 Codex，记录到 `web_gpt_review_log.md`，修改、提交、再循环。
+
+单纯把 GitHub URL 直接贴进输入框不稳定，测试时会被当成普通搜索/聊天内容。要把这条流程写进 skill，就必须强调先选 GitHub source。
 
 ## 定刊和 Reviewer Mode
 
